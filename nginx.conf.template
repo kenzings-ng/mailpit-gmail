@@ -1,0 +1,29 @@
+server {
+    listen 80;
+    server_name __DOMAIN__;
+
+    root __ROOT__;
+    index index.html;
+
+    # Mailpit API + live events websocket
+    location /api/ {
+        proxy_pass __MAILPIT__;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 1h;
+    }
+
+    # Rendered HTML body for the message iframe
+    location /view/ {
+        proxy_pass __MAILPIT__;
+        proxy_set_header Host $host;
+    }
+
+    # SPA routes (/mail/:id)
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}
